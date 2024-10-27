@@ -15,7 +15,7 @@ class TextFieldPage extends StatelessWidget {
     this.controller,
     this.errorText,
     this.prefixIcon,
-    required this.validator, // Accept validator function
+    required this.validator,
   });
 
   @override
@@ -31,11 +31,11 @@ class TextFieldPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             hintText: hintText,
-            prefixIcon: prefixIcon, // Icon displayed at the start
-            errorText: errorText, // Error message
+            prefixIcon: prefixIcon,
+            errorText: errorText,
           ),
           validator: validator,
-          autovalidateMode: AutovalidateMode.onUserInteraction,// Use the validator function
+          autovalidateMode: AutovalidateMode.onUserInteraction,
         ),
         const SizedBox(height: 8),
       ],
