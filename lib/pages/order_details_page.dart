@@ -43,7 +43,7 @@ class OrderDetailsPage extends StatelessWidget {
                   controller: fullnameController,
                   validator: (String? name) {
                     if (name == null || name.length < 3) {
-                      return 'Enter a valid name (at least 3 characters)';
+                      return 'Enter a valid name';
                     }
                     return null; // Input is valid
                   },
@@ -54,7 +54,7 @@ class OrderDetailsPage extends StatelessWidget {
                   keyboardType: TextInputType.phone,
                   controller: phoneNumberController,
                   validator: (String? phone) {
-                    if (phone == null || phone.isEmpty || !RegExp(r'^[0-9]+$').hasMatch(phone)) {
+                    if (phone == null || phone.isEmpty || !RegExp(r'^[0-9]+$').hasMatch(phone) || phone.length<10) {
                       return 'Enter a valid phone number';
                     }
                     return null; // Input is valid
