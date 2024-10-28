@@ -1,19 +1,124 @@
 import 'package:flutter/material.dart';
+import '../services/stripe_service.dart';
 
 class PaymentPage extends StatefulWidget {
-  const PaymentPage({super.key});
+  final double totalPrice;
+  const PaymentPage({super.key, required this.totalPrice});
 
   @override
-  _DemoState createState() => _DemoState();
+  _PaymentPageState createState() => _PaymentPageState();
 }
 
-class _DemoState extends State<PaymentPage> {
+class _PaymentPageState extends State<PaymentPage> {
   String? _selectedMethod;
 
   void _onMethodSelected(String method) {
     setState(() {
       _selectedMethod = (_selectedMethod == method) ? null : method;
     });
+  }
+
+  void showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _placeOrder() {
+    if (_selectedMethod == null) {
+      showSnackBar('Please select a payment option.');
+    } else if (_selectedMethod == 'Cash on Delivery') {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Order Placed"),
+          content: const Text("Your order has been placed successfully."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+    } else if (_selectedMethod == 'Debit/Credit Card') {
+      _openStripePayment();
+    }
+  }
+
+  void _openStripePayment() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Payment using"),
+        content: SizedBox(
+          height: 220,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    height: 60,
+                    width: 80,
+                    child: Image.network('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRURIPRhKOlMe7cw2N9IzXTwUICDh0EVLvcCw&s'),
+                  ),
+                  const SizedBox(width: 20),
+                  const Text('Esewa', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Row(
+                children: [
+                  Container(
+                    height: 60,
+                    width: 80,
+                    child: Image.network('https://blog.khalti.com/wp-content/uploads/2021/01/khalti-icon.png'),
+                  ),
+                  const SizedBox(width: 20),
+                  const Text('Khalti', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context); // Close the dialog
+                  _stripePayment(); // Call the Stripe payment method
+                },
+                child: Row(
+                  children: [
+                    Container(
+                      height: 60,
+                      width: 80,
+                      child: Image.network('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTtt-aAH_ueJ-OLtfJYAnm77Oy74np2CgIOQ&s'),
+                    ),
+                    const SizedBox(width: 20),
+                    const Text('Stripe', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _stripePayment() async {
+    // Call the StripeService to make a payment
+    bool success = await StripeService.instance.makePayment(widget.totalPrice); // Set amount as needed
+    if (success) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Payment Successful"),
+          content: const Text("Your payment was successful. Thank you!"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+    } else {
+      showSnackBar("Payment failed. Please try again.");
+    }
   }
 
   @override
@@ -25,7 +130,7 @@ class _DemoState extends State<PaymentPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -34,40 +139,38 @@ class _DemoState extends State<PaymentPage> {
                       Navigator.pop(context);
                     },
                     child: Container(
-                      padding: EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.arrow_back_ios_new_rounded),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded),
                     ),
                   ),
-                  Text(
+                  const Text(
                     'Payment',
                     style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(width: 48),
+                  const SizedBox(width: 48),
                 ],
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               PaymentMethodRow(
                 icon: Icons.attach_money,
                 label: 'Cash on Delivery',
                 isSelected: _selectedMethod == 'Cash on Delivery',
                 onTap: () => _onMethodSelected('Cash on Delivery'),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               PaymentMethodRow(
                 icon: Icons.credit_card,
                 label: 'Debit/Credit Card',
                 isSelected: _selectedMethod == 'Debit/Credit Card',
                 onTap: () => _onMethodSelected('Debit/Credit Card'),
               ),
-              Spacer(),
+              const Spacer(),
               GestureDetector(
-                onTap: () {
-                  // Place order logic here
-                },
+                onTap: _placeOrder,
                 child: Container(
                   height: 70,
                   decoration: BoxDecoration(
@@ -85,7 +188,7 @@ class _DemoState extends State<PaymentPage> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -93,6 +196,7 @@ class _DemoState extends State<PaymentPage> {
     );
   }
 }
+
 
 class PaymentMethodRow extends StatelessWidget {
   final IconData icon;
@@ -113,7 +217,7 @@ class PaymentMethodRow extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         height: 60,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
@@ -125,15 +229,15 @@ class PaymentMethodRow extends StatelessWidget {
             Row(
               children: [
                 Icon(icon, size: 28),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Text(
                   label,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
             if (isSelected)
-              Icon(Icons.check, color: Colors.green, size: 28), // Show checkmark if selected
+              const Icon(Icons.check, color: Colors.green, size: 28), // Show checkmark if selected
           ],
         ),
       ),
